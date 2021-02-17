@@ -1,0 +1,46 @@
+---
+- name: Add the Proxmox VE repository
+  tags: proxmox
+  ansible.builtin.copy:
+    src: pve-install-repo.list
+    dest: /etc/apt/sources.list.d/
+
+- name: Add the Proxmox VE repository key
+  tags: proxmox
+  ansible.builtin.get_url:
+    url: "http://download.proxmox.com/debian/proxmox-ve-release-6.x.gpg"
+    dest: /etc/apt/trusted.gpg.d/proxmox-ve-release-6.x.gpg
+    mode: 0444
+
+- name: Update your repository and system
+  tags: proxmox
+  ansible.builtin.apt:
+    update_cache: yes
+    upgrade: full
+
+- name: Remove os-prober
+  tags: proxmox
+  ansible.builtin.apt:
+    name: os-prober
+    state: absent
+
+- name: Install Proxmox VE packages
+  tags: proxmox
+  ansible.builtin.apt:
+    name:
+    - proxmox-ve
+    - postfix
+    - open-iscsi
+#    - ifupdown2
+
+- name: Disable Proxmox Enterprise repository
+  tags: proxmox
+  ansible.builtin.lineinfile:
+    path: /etc/apt/sources.list.d/pve-enterprise.list
+    regex: '^deb(.+)'
+    line: '#deb\1'
+    state: present
+    backrefs: yes
+
+- name: Reboot system
+  ansible.builtin.reboot:

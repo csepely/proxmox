@@ -1,0 +1,10 @@
+---
+- name: Base settings for Debian (Buster)
+  tags: buster
+  hosts: all
+  remote_user: ladmin
+  become: yes
+  become_method: su
+
+  roles:
+    - common

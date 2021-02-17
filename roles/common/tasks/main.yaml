@@ -1,0 +1,45 @@
+---
+
+- name: Have boot messages stay on tty1
+  tags: noclear
+  ansible.builtin.copy:
+    src: noclear.conf
+    dest: /etc/systemd/system/getty@tty1.service.d/
+
+- name: Set hostname in /etc/hosts file
+  tags: hosts
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    regex: '(^127\.0\.1\.1)([ ]+)(.+)'
+    line: '{{ ansible_default_ipv4.address }}\2\3.{{ ansible_dns.domain }} \3'
+    state: present
+    backup: yes
+    backrefs: yes
+
+- name: Add new LUKS password
+  tags: change_luks_passwords
+  community.crypto.luks_device:
+    device: /dev/md126
+    passphrase: "{{ ansible_become_password }}"
+    new_passphrase: "{{ new_luks_password }}"
+  vars:
+    new_luks_password: "{{ secure_pass }}"
+
+- name: Remove old LUKS password
+  tags: change_luks_passwords
+  community.crypto.luks_device:
+    device: /dev/md126
+    remove_passphrase: "{{ ansible_become_password }}"
+
+- name: Change default passwords
+  tags: change_system_passwords
+  ansible.builtin.user:
+    name: "{{ item }}"
+    state: present
+    password: "{{ user_password | password_hash('sha512', 65534 | random(seed=inventory_hostname) | string) }}"
+    update_password: always
+  loop:
+    - ladmin
+    - root
+  vars:
+    user_password: "{{ secure_pass }}"

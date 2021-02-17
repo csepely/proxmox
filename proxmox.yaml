@@ -1,0 +1,10 @@
+---
+- name: Proxmox VE settings
+  tags: proxmox
+  hosts: all
+  remote_user: ladmin
+  become: yes
+  become_method: su
+
+  roles:
+    - proxmox

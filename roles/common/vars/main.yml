@@ -1,0 +1,3 @@
+---
+ansible_ssh_password: insecure
+ansible_become_password: r00tme
