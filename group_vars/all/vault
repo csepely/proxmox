@@ -1,0 +1,5 @@
+---
+# put your password here, then use
+# ansible-vault encrypt vault
+# to encrypt your vault file
+vault_secure_pass: "securePassword"
